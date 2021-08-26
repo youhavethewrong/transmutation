@@ -33,9 +33,6 @@ pub fn replace_clipboard(recipes: Vec<Recipe>) {
     let fix = find_a_fix(&original, recipes);
     if let Some(f) = fix {
         ctx.set_contents(f).unwrap();
-        println!("Fixed!");
-    } else {
-        println!("Nothing...");
     }
 }
 
