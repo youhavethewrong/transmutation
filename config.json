@@ -1,0 +1,12 @@
+[
+  {
+    "name": "Fix reddit",
+    "pattern": "//reddit.com/",
+    "replacement": "//old.reddit.com/"
+  },
+  {
+    "name": "Jira's better view",
+    "pattern": "/browse/(.*)",
+    "replacement": "/browse/$1?oldIssueView=true"
+  }
+]

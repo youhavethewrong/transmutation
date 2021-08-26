@@ -1,13 +1,13 @@
 use clipboard::ClipboardContext;
 use clipboard::ClipboardProvider;
-use regex::{Captures, Regex};
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Recipe {
-    name: String,
-    pattern: String,
-    replacement: String,
+    pub name: String,
+    pub pattern: String,
+    pub replacement: String,
 }
 
 pub fn fix_url(input: &str, recipe: Recipe) -> String {
@@ -27,21 +27,21 @@ pub fn find_a_fix(input: &str, recipes: Vec<Recipe>) -> Option<String> {
     })
 }
 
-pub fn example() {
+pub fn replace_clipboard(recipes: Vec<Recipe>) {
     let mut ctx: ClipboardContext = ClipboardProvider::new().unwrap();
-    println!("{:?}", ctx.get_contents());
-    ctx.set_contents("some string".to_owned()).unwrap();
+    let original = ctx.get_contents().unwrap();
+    let fix = find_a_fix(&original, recipes);
+    if let Some(f) = fix {
+        ctx.set_contents(f).unwrap();
+        println!("Fixed!");
+    } else {
+        println!("Nothing...");
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn should_steal_clipboard() {
-        example();
-        assert_eq!(1, 1);
-    }
 
     #[test]
     fn should_fix_url() {
@@ -57,6 +57,7 @@ mod tests {
 
     #[test]
     fn should_find_a_fix() {
+        // https://nwm.atlassian.com/browse/CA-6884
         let malformed_url = "https://reddit.com/r/unixporn";
         let other_recipe = Recipe {
             name: "jira sucks".to_string(),
