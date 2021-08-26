@@ -16,6 +16,17 @@ pub fn fix_url(input: &str, recipe: Recipe) -> String {
     result.to_string()
 }
 
+pub fn find_a_fix(input: &str, recipes: Vec<Recipe>) -> Option<String> {
+    recipes.iter().by_ref().find_map(|recipe| {
+        let fixed = fix_url(input, recipe.clone());
+        if fixed != input {
+            Some(fixed)
+        } else {
+            None
+        }
+    })
+}
+
 pub fn example() {
     let mut ctx: ClipboardContext = ClipboardProvider::new().unwrap();
     println!("{:?}", ctx.get_contents());
@@ -41,6 +52,24 @@ mod tests {
             replacement: "//old.reddit.com/".to_string(),
         };
         let result = fix_url(&malformed_url, recipe);
+        assert_eq!(result, "https://old.reddit.com/r/unixporn");
+    }
+
+    #[test]
+    fn should_find_a_fix() {
+        let malformed_url = "https://reddit.com/r/unixporn";
+        let other_recipe = Recipe {
+            name: "jira sucks".to_string(),
+            pattern: "/browse/(.*)".to_string(),
+            replacement: "/browse/$1?oldIssueView=true".to_string(),
+        };
+        let recipe = Recipe {
+            name: "fix reddit".to_string(),
+            pattern: "//reddit.com/".to_string(),
+            replacement: "//old.reddit.com/".to_string(),
+        };
+        let recipes = vec![other_recipe, recipe];
+        let result = find_a_fix(&malformed_url, recipes).unwrap();
         assert_eq!(result, "https://old.reddit.com/r/unixporn");
     }
 }
