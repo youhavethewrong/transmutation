@@ -1,11 +1,6 @@
-use clipboard::ClipboardContext;
-use clipboard::ClipboardProvider;
+use transmutation::example;
 
-fn example() {
-    let mut ctx: ClipboardContext = ClipboardProvider::new().unwrap();
-    println!("{:?}", ctx.get_contents());
-    ctx.set_contents("some string".to_owned()).unwrap();
-}
+const CONFIG_PATH: &str = "./config.json";
 
 fn main() {
     println!("Hello, world!");
