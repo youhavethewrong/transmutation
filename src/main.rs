@@ -14,7 +14,8 @@ use std::{
 use transmutation::{replace_clipboard, Recipe};
 use tui::{
     backend::CrosstermBackend,
-    widgets::{Block, BorderType, Borders},
+    text::{Span, Spans},
+    widgets::{Block, BorderType, Borders, Paragraph},
     Terminal,
 };
 
@@ -45,8 +46,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut terminal = Terminal::new(backend)?;
 
-    let mut should_quit = false;
-
     // Setup input handling
     let (tx, rx) = mpsc::channel();
     let tick_rate = Duration::from_millis(250);
@@ -71,6 +70,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     terminal.clear()?;
 
+    let mut message = "Waiting...";
+
     loop {
         terminal.draw(|f| {
             // Wrapping block for a group
@@ -83,7 +84,16 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .borders(Borders::ALL)
                 .title("Transmutation")
                 .border_type(BorderType::Rounded);
-            f.render_widget(block, size);
+
+            let instructions = vec![Span::raw("Press 'r' to replace or 'q' to quit!")];
+            let messages = vec![Span::raw(message)];
+            let text = vec![
+                Spans::from(instructions),
+                Spans::from(vec![Span::raw("")]),
+                Spans::from(messages),
+            ];
+            let p = Paragraph::new(text).block(block);
+            f.render_widget(p, size);
         })?;
         match rx.recv()? {
             Event::Input(event) => match event.code {
@@ -95,17 +105,20 @@ fn main() -> Result<(), Box<dyn Error>> {
                         DisableMouseCapture
                     )?;
                     terminal.show_cursor()?;
-                    should_quit = true;
                     break;
+                }
+                KeyCode::Char('r') => {
+                    if replace_clipboard(recipes.clone()).is_some() {
+                        message = "Replaced!";
+                    } else {
+                        message = "No match.";
+                    }
                 }
                 _ => {}
             },
             Event::Tick => {
-                replace_clipboard(recipes.clone());
+                message = "Waiting...";
             }
-        }
-        if should_quit {
-            break;
         }
     }
     Ok(())

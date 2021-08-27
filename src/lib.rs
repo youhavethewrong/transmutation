@@ -27,12 +27,15 @@ pub fn find_a_fix(input: &str, recipes: Vec<Recipe>) -> Option<String> {
     })
 }
 
-pub fn replace_clipboard(recipes: Vec<Recipe>) {
+pub fn replace_clipboard(recipes: Vec<Recipe>) -> Option<String> {
     let mut ctx: ClipboardContext = ClipboardProvider::new().unwrap();
     let original = ctx.get_contents().unwrap();
     let fix = find_a_fix(&original, recipes);
     if let Some(f) = fix {
         ctx.set_contents(f).unwrap();
+        Some("".to_string())
+    } else {
+        None
     }
 }
 
@@ -54,7 +57,6 @@ mod tests {
 
     #[test]
     fn should_find_a_fix() {
-        // https://nwm.atlassian.com/browse/CA-6884
         let malformed_url = "https://reddit.com/r/unixporn";
         let other_recipe = Recipe {
             name: "jira sucks".to_string(),
